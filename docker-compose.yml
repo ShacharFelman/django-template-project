@@ -1,0 +1,82 @@
+services:
+  app:
+    build:
+      context: .
+      args:
+        - DEV=true
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./app:/app
+    command: >
+      sh -c "# python manage.py wait_for_db && \
+              python manage.py migrate &&
+              python manage.py runserver 0.0.0.0:8000"
+    env_file:
+      - .env
+    depends_on:
+      - db
+      - redis
+
+  db:
+    image: postgres:17-alpine
+    ports:
+      - "5432:5432"
+    volumes:
+      - dev-db-data:/var/lib/postgresql/data
+    env_file:
+      - .env
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+
+  celery-worker:
+    build:
+      context: .
+      args:
+        - DEV=true
+    volumes:
+      - ./app:/app
+    command: celery -A news_service worker --loglevel=info
+    env_file:
+      - .env
+    depends_on:
+      - db
+      - redis
+
+  celery-beat:
+    build:
+      context: .
+      args:
+        - DEV=true
+    volumes:
+      - ./app:/app
+    command: celery -A news_service beat --loglevel=info
+    env_file:
+      - .env
+    depends_on:
+      - db
+      - redis
+
+  celery-flower:
+    build:
+      context: .
+      args:
+        - DEV=true
+    ports:
+      - "5555:5555"
+    volumes:
+      - ./app:/app
+    command: celery -A news_service flower --port=5555
+    env_file:
+      - .env
+    depends_on:
+      - redis
+
+volumes:
+  dev-db-data:
+  redis-data:

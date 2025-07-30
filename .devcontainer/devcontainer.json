@@ -1,0 +1,53 @@
+{
+    "name": "News Service Dev Container",
+    "dockerComposeFile": [
+        "../docker-compose.yml",
+        "../docker-compose.dev.yml"
+    ],
+    "service": "app",
+    "workspaceFolder": "/app",
+    "runServices": [
+        "app",
+        "db",
+        "redis",
+        "celery-worker",
+        "celery-beat",
+        "celery-flower"
+    ],
+    "forwardPorts": [
+        8000,
+        5432,
+        6379,
+        5555
+    ],
+    "portsAttributes": {
+        "8000": {
+            "label": "Django App",
+            "onAutoForward": "notify"
+        },
+        "5555": {
+            "label": "Celery Flower",
+            "onAutoForward": "notify"
+        }
+    },
+    "containerEnv": {
+        "HOME": "/home/django-user",
+        "DISPLAY": "none",
+        "VSCODE_REMOTE_CONTAINERS_SKIP_X11": "1"
+    },
+
+    "customizations": {
+        "vscode": {
+            "settings": {
+                "python.defaultInterpreterPath": "/py/bin/python"
+            },
+            "extensions": [
+                "ms-python.python",
+                "ms-python.vscode-pylance",
+                "ms-azuretools.vscode-docker"
+            ]
+        }
+    },
+    "remoteUser": "root",
+    "postCreateCommand": "mkdir -p /tmp/.X11-unix && chmod 1777 /tmp/.X11-unix && su django-user -c \"echo \\\"alias runserver='python manage.py wait_for_db && python manage.py migrate && python manage.py runserver 0.0.0.0:8000'\\\" >> /home/django-user/.profile\""
+}
