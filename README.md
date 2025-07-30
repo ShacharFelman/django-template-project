@@ -1,32 +1,53 @@
-# News Summarization Service
+# Django Template Project
 
 ## Overview
 
-The News Summarization Service is a Django-based platform that fetches news articles from external sources (e.g., NewsAPI), stores them, and provides AI-powered summaries using OpenAI models via LangChain. The system exposes a REST API for managing users, articles, fetching new articles, and generating/retrieving summaries.
+A comprehensive Django template project that provides examples of common web application patterns and features. This template includes authentication, API endpoints, background tasks, external service integration, and more - all implemented as reusable examples.
+
+---
+
+## Project Structure
+
+```
+django-template-project/
+├── app/
+│   ├── core/           # Core settings and common functionality
+│   ├── example/        # Feature examples with "example_of_xxx" naming
+│   └── users/          # Authentication system (unchanged)
+├── docs/               # Documentation
+├── docker-compose.yml  # Docker services configuration
+└── requirements.txt    # Python dependencies
+```
 
 ---
 
 ## Features
-- **User Management:** Register, authenticate, and manage users (email-based login).
-- **Article Management:** CRUD operations for news articles.
-- **Fetching:** Periodic and manual fetching of articles from NewsAPI.
-- **Summarization:** AI-powered, **asynchronous** summarization of articles using OpenAI models (via Celery tasks).
-- **API Documentation:** Auto-generated with drf-spectacular (Swagger/OpenAPI).
-- **Dockerized:** Full Docker setup for app, Postgres, Redis, Celery worker/beat/flower.
-- **Dev Container:** VSCode devcontainer support for easy onboarding.
-- **CORS Support:** Configurable CORS headers for cross-origin requests.
-- **Redis Caching:** Redis is used for both Celery and API caching.
+
+### Core Features
+- **User Management:** Register, authenticate, and manage users (email-based login)
+- **API Documentation:** Auto-generated with drf-spectacular (Swagger/OpenAPI)
+- **Dockerized:** Full Docker setup for app, Postgres, Redis, Celery worker/beat/flower
+- **CORS Support:** Configurable CORS headers for cross-origin requests
+- **Redis Caching:** Redis is used for both Celery and API caching
+
+### Example Features (in `example` app)
+- **CRUD Operations:** Complete CRUD with caching and custom permissions
+- **External API Integration:** Example service for external API calls
+- **AI/ML Processing:** Example service for AI/ML integration
+- **Background Tasks:** Periodic and async task examples
+- **Admin Interface:** Advanced admin with custom actions and filters
+- **Management Commands:** Custom commands and Celery monitoring
+- **Comprehensive Testing:** Model, serializer, service, and integration tests
 
 ---
 
 ## Architecture
 
 - **Django REST Framework** for API endpoints
-- **Celery** for background tasks (fetching, summarization)
+- **Celery** for background tasks
 - **PostgreSQL** as the database
-- **Redis** as the Celery broker **and API cache**
-- **OpenAI (via LangChain)** for summarization
-- **CORS** for cross-origin API access
+- **Redis** as the Celery broker and API cache
+- **Docker** for containerized development and deployment
 
 ---
 
@@ -40,11 +61,11 @@ The News Summarization Service is a Django-based platform that fetches news arti
 Create a `.env` file in the project root with the following variables:
 ```
 DB_HOST=db
-DB_NAME=newsdb
-DB_USER=newsuser
-DB_PASS=newspass
-NEWSAPI_API_KEY=your_newsapi_key
-OPENAI_API_KEY=your_openai_key
+DB_NAME=template_db
+DB_USER=template_user
+DB_PASS=template_pass
+EXAMPLE_API_KEY=your_example_api_key
+EXAMPLE_AI_API_KEY=your_example_ai_key
 CELERY_BROKER_URL=redis://redis:6379/0
 CELERY_RESULT_BACKEND=redis://redis:6379/0
 CORS_ALLOWED_ORIGINS=http://localhost:3000,http://localhost:8000
@@ -76,83 +97,25 @@ REDIS_URL=redis://redis:6379/0
 
 ---
 
-
-## API Endpoints
+## Example API Endpoints
 
 ### Authentication
 - `POST /api/users/create/` — Register a new user
 - `POST /api/users/token/` — Obtain auth token
 - `GET /api/users/me/` — Get current user info
 
-### Articles
-- `GET /api/articles/` — List articles
-- `POST /api/articles/` — Create article (**admin only**)
-- `GET /api/articles/{id}/` — Retrieve article
-- `PUT /api/articles/{id}/` — Update article (**admin only**)
-- `DELETE /api/articles/{id}/` — Delete article (**admin only**)
-- `GET /api/articles/{id}/summary/` — Get/generate summary for article
+### Example CRUD Operations
+- `GET /api/example/items/` — List example items
+- `POST /api/example/items/` — Create example item
+- `GET /api/example/items/{id}/` — Retrieve example item
+- `PUT /api/example/items/{id}/` — Update example item
+- `DELETE /api/example/items/{id}/` — Delete example item
+- `GET /api/example/items/{id}/process/` — Process example item
 
-**Possible Responses for `/api/articles/{id}/summary/`:**
-- **200 OK** (summary completed):
-  ```json
-  {
-    "success": true,
-    "summary": { ... }
-  }
-  ```
-- **202 Accepted** (summary is being processed):
-  ```json
-  {
-    "success": true,
-    "summary": { ... },
-    "message": "Summary is being processed."
-  }
-  ```
-- **500 Internal Server Error** (summary failed or error):
-  ```json
-  {
-    "success": false,
-    "summary": { ... },
-    "message": "Summary generation failed."
-  }
-  ```
-  or
-  ```json
-  {
-    "error": "Internal server error."
-  }
-  ```
-- **404 Not Found** (article does not exist):
-  ```json
-  {
-    "detail": "Article not found."
-  }
-  ```
-- **403 Forbidden** (not enough permissions):
-  ```json
-  {
-    "detail": "You do not have permission to perform this action."
-  }
-  ```
-- **401 Unauthorized** (not authenticated):
-  ```json
-  {
-    "detail": "Authentication credentials were not provided."
-  }
-  ```
-
-### Fetchers
-- `POST /api/fetchers/fetch/` — Manually trigger article fetch (**admin only**)
-
-### Summarizer
-- `POST /api/summarizer/summarize/` — **Asynchronously** summarize an article by ID (**admin only**)
-- `GET /api/summarizer/article/{article_id}/summary/` — Get summary for article (**admin only**)
-- `GET /api/summarizer/article/{article_id}/summaries/` — Get all summaries for article (**admin only**)
-- `GET /api/summarizer/summary/{summary_id}/status/` — Get summary status (**admin only**)
-
-> **Note:** All summarizer endpoints require authentication and admin privileges. Non-admins receive `403 Forbidden`, unauthenticated users receive `401 Unauthorized`.
-> 
-> The responses of `POST /api/summarizer/summarize/` are the same as `/api/articles/{id}/summary/` above.
+### Example Services
+- `POST /api/example/fetch/` — Trigger external API fetch (admin only)
+- `POST /api/example/process/` — Trigger async processing (admin only)
+- `GET /api/example/status/{item_id}/` — Check processing status (admin only)
 
 ---
 
@@ -177,27 +140,10 @@ Content-Type: application/json
 }
 ```
 
-### 2. Obtain Auth Token
+### 2. List Example Items
 **Request:**
 ```http
-POST /api/users/token/
-Content-Type: application/json
-{
-  "email": "user@example.com",
-  "password": "password123"
-}
-```
-**Response:**
-```json
-{
-  "token": "<auth_token>"
-}
-```
-
-### 3. List Articles
-**Request:**
-```http
-GET /api/articles/
+GET /api/example/items/
 Authorization: Token <auth_token>
 ```
 **Response:**
@@ -209,84 +155,130 @@ Authorization: Token <auth_token>
   "results": [
     {
       "id": 1,
-      "title": "Test Article",
-      "content": "Some content...",
-      "url": "http://example.com/article",
-      "published_date": "2025-07-09T12:00:00Z",
-      "author": "Author Name",
-      "source": "Test Source",
-      "image_url": null,
-      "description": null,
-      "news_client_source": "Test Client",
-      "created_at": "2025-07-09T12:00:00Z"
+      "title": "Example Item",
+      "content": "Example content...",
+      "url": "http://example.com/item",
+      "published_date": "2025-01-09T12:00:00Z",
+      "author": "Example Author",
+      "source": "Example Source",
+      "example_source": "Example Client",
+      "created_at": "2025-01-09T12:00:00Z"
     }
   ]
 }
 ```
 
-### 4. Summarize Article (Async)
+### 3. Trigger External API Fetch
 **Request:**
 ```http
-POST /api/summarizer/summarize/
+POST /api/example/fetch/
 Authorization: Token <admin_token>
 Content-Type: application/json
 {
-  "article_id": 1,
-  "ai_model": "gpt-4.1-nano",
-  "max_words": 150
-}
-```
-**Possible Responses:**
-- **202 Accepted** (summary is being processed):
-  ```json
-  {
-    "success": true,
-    "summary": { ... },
-    "message": "Summary is being processed."
-  }
-  ```
-- **200 OK** (summary completed):
-  ```json
-  {
-    "success": true,
-    "summary": { ... }
-  }
-  ```
-- **500 Internal Server Error** (summary failed):
-  ```json
-  {
-    "success": false,
-    "summary": { ... },
-    "message": "Summary generation failed."
-  }
-  ```
-- **403 Forbidden** (non-admin):
-  ```json
-  { "detail": "You do not have permission to perform this action." }
-  ```
-- **401 Unauthorized** (not logged in):
-  ```json
-  { "detail": "Authentication credentials were not provided." }
-  ```
-
-**Polling for Status:**
-- Use `GET /api/summarizer/summary/{summary_id}/status/` to check the status of a summary (returns `pending`, `in_progress`, `completed`, or `failed`).
-
-### 5. Fetch Articles (Admin Only)
-**Request:**
-```http
-POST /api/fetchers/fetch/
-Authorization: Token <admin_token>
-Content-Type: application/json
-{
-  "query_params": {"category": "technology"}
+  "query_params": {"category": "example"}
 }
 ```
 **Response:**
 ```json
 {
-  "message": "Fetch and save completed successfully."
+  "message": "Example fetch and save completed successfully."
 }
+```
+
+---
+
+## Example Features Documentation
+
+### Models
+- **ExampleOfArticle:** Basic model with relationships and common fields
+- **ExampleOfFetchLog:** Logging model with status tracking and metadata
+- **ExampleOfSummary:** Model with async status tracking and relationships
+
+### Views
+- **ExampleOfCachedListView:** CRUD operations with caching and custom permissions
+- **ExampleOfManualTriggerView:** Manual trigger for external services
+- **ExampleOfAsyncProcessingView:** Async processing with status checking
+
+### Services
+- **ExampleOfExternalApiService:** External API integration with error handling
+- **ExampleOfAiService:** AI/ML service integration with async processing
+
+### Admin
+- **ExampleOfBasicAdmin:** Basic admin customization
+- **ExampleOfAdvancedAdmin:** Advanced admin with filters and computed fields
+- **ExampleOfCustomActionsAdmin:** Admin with custom bulk actions
+
+### Management Commands
+- **ExampleOfCustomCommand:** Custom command with async/sync options
+- **ExampleOfCeleryCommand:** Celery status monitoring command
+
+### Tests
+- **Model Tests:** Validation, constraints, and relationships
+- **Serializer Tests:** Custom validation and computed fields
+- **Service Tests:** External API and AI service integration
+- **Integration Tests:** Complete workflow testing
+
+---
+
+## Customization Guide
+
+### Adding Your Own Models
+1. Create models in your app following the `ExampleOf*` pattern
+2. Add admin classes following the admin examples
+3. Create serializers with custom validation as needed
+4. Add tests for your models
+
+### Adding External API Integration
+1. Use `ExampleOfExternalApiService` as a template
+2. Implement your API client following the same pattern
+3. Add error handling and logging
+4. Create corresponding tasks for background processing
+
+### Adding AI/ML Services
+1. Use `ExampleOfAiService` as a template
+2. Implement your AI client following the same pattern
+3. Add async processing capabilities
+4. Create status tracking for long-running operations
+
+### Adding Background Tasks
+1. Use the task examples in `example/tasks/`
+2. Follow the retry and error handling patterns
+3. Add logging for monitoring
+4. Create management commands for manual triggers
+
+---
+
+## Development & Testing
+
+### Running Tests
+```sh
+# Run all tests
+python manage.py test
+
+# Run specific test files
+python manage.py test example.tests.example_of_model_tests
+python manage.py test example.tests.example_of_integration_tests
+```
+
+### Management Commands
+```sh
+# Test custom command
+python manage.py example_of_custom_command --async
+
+# Check Celery status
+python manage.py example_of_celery_command
+```
+
+### Celery Tasks
+```sh
+# Start Celery worker
+celery -A core worker --loglevel=info
+
+# Start Celery beat (scheduler)
+celery -A core beat --loglevel=info
+
+# Monitor with Flower
+celery -A core flower --port=5555
 ```
 
 ---
@@ -297,10 +289,16 @@ Content-Type: application/json
 
 ---
 
-## Development & Testing
-- Run tests:
-  ```sh
-  python manage.py test
-  ```
-- Lint code:
-  ```
+## Contributing
+
+This template is designed to be a starting point for Django projects. Feel free to:
+1. Copy and modify the examples for your specific use case
+2. Add new example patterns
+3. Improve the documentation
+4. Submit issues or pull requests
+
+---
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.

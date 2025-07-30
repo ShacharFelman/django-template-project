@@ -1,14 +1,22 @@
+# Core Django packages
 Django
 djangorestframework
 drf-spectacular
 psycopg2-binary
+
+# Background task processing
 celery
 redis
-requests
-httpx
-langchain
-langchain_openai
 django-celery-beat
 flower
 django-redis
+
+# HTTP client for external API examples
+requests
+httpx
+
+# CORS and security
 django-cors-headers
+
+# Note: Removed langchain and langchain_openai as they were specific to the news summarization service
+# Add your own AI/ML packages as needed for your specific use case
